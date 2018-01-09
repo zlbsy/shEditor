@@ -92,5 +92,15 @@ namespace App.Service{
             yield return App.Util.SceneManager.CurrentScene.StartCoroutine(client.Send( url, form));
             response = client.Deserialize<ResponseBase>();
         }
+
+        public IEnumerator RequestUserReset(string user_id)
+        {
+            var url = "tool/user_reset";
+            WWWForm form = new WWWForm();
+            form.AddField("user_id", user_id);
+            HttpClient client = new HttpClient();
+            yield return App.Util.SceneManager.CurrentScene.StartCoroutine(client.Send( url, form));
+            response = client.Deserialize<ResponseBase>();
+        }
 	}
 }

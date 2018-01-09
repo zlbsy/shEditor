@@ -15,11 +15,16 @@ using UnityEditor;
 
 namespace App.Controller{
     public class CMasterScene : CScene {
+        const string scriptableObjectPath = "Assets/Editor Default Resources/ScriptableObject/{0}.asset";
+        const string scriptableTutorialPath = "Assets/Editor Default Resources/ScriptableObject/tutorial/{0}.asset";
+        const string scriptableScenarioPath = "Assets/Editor Default Resources/ScriptableObject/scenario/{0}.asset";
         Dictionary<string, IEnumerator> apis;
         Dictionary<string, IEnumerator> assets;
         Dictionary<string, IEnumerator> scenarios;
         private string type = "";
         private int page = 0;
+        private string userId = "userId";
+        private string scenarioId = "all";
         private string[] apiKeys;
         private string[] assetsKeys;
         private string[] scenarioKeys;
@@ -63,7 +68,7 @@ namespace App.Controller{
                     apis.Add("star", CreateScriptableObjectMasterStarRun());
                     apis.Add("loginbonus", CreateScriptableObjectMasterLoginBonusRun());
                     apis.Add("exp", CreateScriptableObjectMasterExpRun());
-                    apis.Add("scenario", CreateScriptableObjectMasterScenarioRun());
+                    //apis.Add("scenario", CreateScriptableObjectMasterScenarioRun());
                     apis.Add("story_progress", CreateScriptableObjectMasterStoryProgressRun());
                     apiKeys = apis.Keys.ToArray();
 
@@ -94,6 +99,11 @@ namespace App.Controller{
                     type = "scenarios";
                     page = 0;
                 }
+                if (GUI.Button(new Rect(50, 250, 200, 30), "user reset"))
+                {
+                    type = "user reset";
+                    page = 0;
+                }
             }
             else if (type == "apis")
             {
@@ -105,20 +115,44 @@ namespace App.Controller{
             }
             else if (type == "scenarios")
             {
-                SubGUI(scenarioKeys);
+                ScenarioRun();
+            }
+            else if (type == "user reset")
+            {
+                UserReset();
+            }
+        }
+        void ScenarioRun(){
+            scenarioId = GUI.TextField(new Rect(50, 100, 200, 30), scenarioId);
+            if (GUI.Button(new Rect(50, 150, 200, 30), "run"))
+            {
+                this.StartCoroutine(CreateScriptableObjectMasterScenarioRun(scenarioId == "all" ? 0 : int.Parse(scenarioId)));
+            }
+            if (GUI.Button(new Rect(50, 200, 200, 30), "返回"))
+            {
+                type = "";
+            }
+        }
+        void UserReset()
+        {
+            userId = GUI.TextField(new Rect(50, 100, 200, 30), userId);
+            if (GUI.Button(new Rect(50, 150, 200, 30), "reset"))
+            {
+                SEditorMaster sMaster = new SEditorMaster();
+                StartCoroutine (sMaster.RequestUserReset(userId));
             }
         }
         void SubGUI(string[] keys)
         {
-            if (GUI.Button(new Rect(10, 10, 200, 30), "前一页"))
+            if (GUI.Button(new Rect(10, 10, 100, 30), "前一页"))
             {
                 page--;
             }
-            if (GUI.Button(new Rect(220, 10, 200, 30), "下一页"))
+            if (GUI.Button(new Rect(120, 10, 100, 30), "下一页"))
             {
                 page++;
             }
-            if (GUI.Button(new Rect(430, 10, 200, 30), "返回"))
+            if (GUI.Button(new Rect(230, 10, 100, 30), "返回"))
             {
                 type = "";
             }
@@ -145,7 +179,7 @@ namespace App.Controller{
             SEditorMaster sMaster = new SEditorMaster();
             yield return StartCoroutine (sMaster.RequestAll("exp"));
             asset.exps = sMaster.responseAll.exps;
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.ExpAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.ExpAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterLoginBonusRun()
@@ -155,7 +189,7 @@ namespace App.Controller{
             SEditorMaster sMaster = new SEditorMaster();
             yield return StartCoroutine (sMaster.RequestAll("loginbonus"));
             asset.loginbonuses = sMaster.responseAll.loginbonus;
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.LoginBonusAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.LoginBonusAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterStarRun()
@@ -165,34 +199,34 @@ namespace App.Controller{
             SEditorMaster sMaster = new SEditorMaster();
             yield return StartCoroutine (sMaster.RequestAll("character_star"));
             asset.characterStars = sMaster.responseAll.character_stars;
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.CharacterStarAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.CharacterStarAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectLanguageAssetRun()
         {
             var languageAsset = ScriptableObject.CreateInstance<App.Model.Scriptable.LanguageAsset>();
-            UnityEditor.AssetDatabase.CreateAsset(languageAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.LanguageAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(languageAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.LanguageAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
             yield break;
         }
         IEnumerator CreateScriptableObjectPromptAssetRun()
         {
             var promptMessageAsset = ScriptableObject.CreateInstance<App.Model.Scriptable.PromptMessageAsset>();
-            UnityEditor.AssetDatabase.CreateAsset(promptMessageAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.PromptMessageAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(promptMessageAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.PromptMessageAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
             yield break;
         }
         IEnumerator CreateScriptableObjectEffectAssetRun()
         {
             var effectAsset = ScriptableObject.CreateInstance<App.Model.Scriptable.EffectAsset>();
-            UnityEditor.AssetDatabase.CreateAsset(effectAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.EffectAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(effectAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.EffectAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
             yield break;
         }
         IEnumerator CreateScriptableObjectFaceAssetRun()
         {
             var faceAsset = ScriptableObject.CreateInstance<App.Model.Scriptable.FaceAsset>();
-            UnityEditor.AssetDatabase.CreateAsset(faceAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.FaceAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(faceAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.FaceAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
             yield break;
         }
@@ -201,20 +235,27 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("story_progress"));
             var asset = ScriptableObject.CreateInstance<App.Model.Scriptable.StoryProgressAsset>();
             asset.keys = sMaster.responseAll.story_progress_keys;
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.StoryProgressAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.StoryProgressAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
             yield break;
         }
-        IEnumerator CreateScriptableObjectMasterScenarioRun(){
+        IEnumerator CreateScriptableObjectMasterScenarioRun(int id){
             SEditorMaster sMaster = new SEditorMaster();
             yield return StartCoroutine (sMaster.RequestAll("scenario"));
             for (int i = 0; i < sMaster.responseAll.scenarios.Length; i++)
             {
+                int currentId = sMaster.responseAll.scenario_ids[i];
+                if (id > 0 && Mathf.FloorToInt(currentId / 100) != id)
+                {
+                    continue;
+                }
                 var asset = ScriptableObject.CreateInstance<App.Model.Scriptable.ScenarioAsset>();
                 asset.script = sMaster.responseAll.scenarios[i];
-                UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/scenario/{0}.asset", sMaster.responseAll.scenario_ids[i]));
+                Debug.LogError("CreateAsset Scenario:" + currentId);
+                UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableScenarioPath, currentId));
                 UnityEditor.AssetDatabase.Refresh();
             }
+            Debug.Log("CreateScriptableObjectMasterScenarioRun complete");
         }
         IEnumerator CreateScriptableObjectMasterTutorialRun()
         {
@@ -224,7 +265,7 @@ namespace App.Controller{
             foreach(List<string> tutorial in sMaster.responseAll.tutorials){
                 var asset = ScriptableObject.CreateInstance<App.Model.Scriptable.TutorialAsset>();
                 asset.tutorial = tutorial;
-                UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/tutorial/{0}.asset", i++));
+                UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableTutorialPath, i++));
                 UnityEditor.AssetDatabase.Refresh();
             }
 
@@ -237,7 +278,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("npc"));
             asset.npcs = sMaster.responseAll.npcs;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.NpcAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.NpcAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterNpcEquipmentRun()
@@ -248,7 +289,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("npc_equipment"));
             asset.npc_equipments = sMaster.responseAll.npc_equipments;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.NpcEquipmentAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.NpcEquipmentAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterWordRun()
@@ -259,7 +300,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("word"));
             asset.words = sMaster.responseAll.words;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.WordAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.WordAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterGachaRun()
@@ -270,7 +311,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("gacha"));
             asset.gachas = sMaster.responseAll.gachas;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.GachaAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.GachaAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterShopRun()
@@ -281,7 +322,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("shop"));
             asset.shopItems = sMaster.responseAll.shop_items;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.ShopAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.ShopAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterMissionRun()
@@ -292,7 +333,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("mission"));
             asset.missions = sMaster.responseAll.missions;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.MissionAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.MissionAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterItemRun()
@@ -303,7 +344,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("item"));
             asset.items = sMaster.responseAll.items;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.ItemAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.ItemAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterSkillRun()
@@ -314,7 +355,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("skill"));
             asset.skills = sMaster.responseAll.skills;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.SkillAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.SkillAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterStrategyRun()
@@ -325,7 +366,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("strategy"));
             asset.strategys = sMaster.responseAll.strategys;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.StrategyAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.StrategyAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterHorseRun()
@@ -336,7 +377,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("horse"));
             asset.equipments = sMaster.responseAll.horses;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.HorseAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.HorseAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterClothesRun()
@@ -347,7 +388,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("clothes"));
             asset.equipments = sMaster.responseAll.clothes;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.ClothesAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.ClothesAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterWeaponRun()
@@ -358,7 +399,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("weapon"));
             asset.equipments = sMaster.responseAll.weapons;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.WeaponAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.WeaponAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterCharacterRun()
@@ -369,7 +410,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("character"));
             areaAsset.characters = sMaster.responseAll.characters;
 
-            UnityEditor.AssetDatabase.CreateAsset(areaAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.CharacterAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(areaAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.CharacterAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterBattleFieldRun()
@@ -380,7 +421,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("battlefield"));
             asset.battlefields = sMaster.responseAll.battlefields;
 
-            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.BattlefieldAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(asset, string.Format(scriptableObjectPath, App.Model.Scriptable.BattlefieldAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterAreaRun()
@@ -391,7 +432,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("area"));
             areaAsset.areas = sMaster.responseAll.areas;
 
-            UnityEditor.AssetDatabase.CreateAsset(areaAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.AreaAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(areaAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.AreaAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterWorldRun()
@@ -402,7 +443,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("world"));
             worldAsset.worlds = sMaster.responseAll.worlds;
 
-            UnityEditor.AssetDatabase.CreateAsset(worldAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.WorldAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(worldAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.WorldAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterBaseMapRun()
@@ -413,7 +454,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("base_map"));
             baseMapAsset.baseMaps = sMaster.responseAll.base_maps;
 
-            UnityEditor.AssetDatabase.CreateAsset(baseMapAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.BaseMapAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(baseMapAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.BaseMapAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterTileRun()
@@ -424,7 +465,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("tile"));
             tileAsset.tiles = sMaster.responseAll.tiles;
 
-            UnityEditor.AssetDatabase.CreateAsset(tileAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.TileAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(tileAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.TileAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterBuildingRun()
@@ -435,7 +476,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("building"));
             buildingAsset.buildings = sMaster.responseAll.buildings;
 
-            UnityEditor.AssetDatabase.CreateAsset(buildingAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.BuildingAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(buildingAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.BuildingAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         IEnumerator CreateScriptableObjectMasterConstantRun()
@@ -446,7 +487,7 @@ namespace App.Controller{
             yield return StartCoroutine (sMaster.RequestAll("constant"));
             constantAsset.constant = sMaster.responseAll.constant;
 
-            UnityEditor.AssetDatabase.CreateAsset(constantAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.ConstantAsset.Name));
+            UnityEditor.AssetDatabase.CreateAsset(constantAsset, string.Format(scriptableObjectPath, App.Model.Scriptable.ConstantAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
         #endif

@@ -427,25 +427,6 @@ namespace MyEditor
             UnityEditor.AssetDatabase.CreateAsset(scenarioAsset, string.Format("Assets/Editor Default Resources/ScriptableObject/{0}.asset", App.Model.Scriptable.ScenarioAsset.Name));
             UnityEditor.AssetDatabase.Refresh();
         }
-        [MenuItem("SH/Build Assetbundle/Scenario")]
-        static private void BuildAssetBundleScenario()
-        {
-            ScriptableObject asset = null;
-            string assetPath;
-            DirectoryInfo rootDirInfo = new DirectoryInfo(Application.dataPath + "/Editor Default Resources/ScriptableObject/scenario");
-            FileInfo[] files = rootDirInfo.GetFiles();
-            foreach (FileInfo file in files)
-            {
-                if (file.Extension != ".asset")
-                {
-                    continue;
-                }
-                string name = file.Name;
-                assetPath = string.Format("ScriptableObject/scenario/{0}", name);
-                asset = EditorGUIUtility.Load(assetPath) as ScriptableObject;
-                BuildAssetBundleChilds(name.Replace(".asset",""), "scenario", asset);
-            }
-        }
         [MenuItem("SH/Build Assetbundle/Tutorial")]
         static private void BuildAssetBundleTutorial()
         {
@@ -465,7 +446,7 @@ namespace MyEditor
                 BuildAssetBundleChilds(name.Replace(".asset",""), "tutorial", asset);
             }
         }
-        static private void BuildAssetBundleChilds(string name, string child, ScriptableObject asset)
+        static public void BuildAssetBundleChilds(string name, string child, ScriptableObject asset)
         {
             string path = "Assets/Editor Default Resources/assetbundle/"+target+"/"+child+"/";
             string assetPath = string.Format("Assets/Editor Default Resources/ScriptableObject/{0}/{1}.asset", child, name);
